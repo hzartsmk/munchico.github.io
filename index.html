@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Simple POS (PKR)</title>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <script>
+    // Initialize EmailJS
+    (function(){
+      emailjs.init("YOUR_PUBLIC_KEY"); // Replace with your public key
+    })();
+  </script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    h2 {
+      text-align: center;
+    }
+    .pos-container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    .item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .item input {
+      width: 100px;
+      padding: 5px;
+    }
+    .bill {
+      margin-top: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    .total {
+      text-align: right;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+    }
+    .print-btn {
+      background: #28a745;
+      color: white;
+    }
+    .add-btn {
+      background: #007bff;
+      color: white;
+    }
+
+    /* Print Styles */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .bill, .bill * {
+        visibility: visible;
+      }
+      .bill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+      }
+    }
+    
+    .logo {
+      
+      width: 100px;
+      height: 40px;
+      padding-bottom: 600px;
+    }
+    
+    
+    
+    
+    
+  </style>
+</head>
+<body>
+  <div class="pos-container">
+    <h2>
+      
+      <img src="IMG-20250513-WA0001.jpg" class="logo">
+        <!--Tab to edit-->
+      </img>
+      
+      
+      
+    </h2>
+
+    <div class="item">
+      <input type="text" id="item-name" placeholder="Item Name">
+      <input type="number" id="item-price" placeholder="Price">
+      <input type="number" id="item-qty" placeholder="Qty" value="1">
+      <button class="add-btn" onclick="addItem()">Add</button>
+    </div>
+
+    <div class="bill" id="bill">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Price (₨)</th>
+            <th>Total (₨)</th>
+          </tr>
+        </thead>
+        <tbody id="bill-body"></tbody>
+      </table>
+      <div class="total" id="total">Total: ₨0.00</div>
+    </div>
+
+    <button class="print-btn" onclick="printAndEmail()">Print Bill & Email</button>
+  </div>
+
+  <script>
+    let totalAmount = 0;
+
+    function addItem() {
+      const name = document.getElementById('item-name').value;
+      const price = parseFloat(document.getElementById('item-price').value);
+      const qty = parseInt(document.getElementById('item-qty').value);
+
+      if (!name || isNaN(price) || isNaN(qty)) {
+        alert('Please enter valid item details');
+        return;
+      }
+
+      const total = price * qty;
+      totalAmount += total;
+
+      const row = `
+        <tr>
+          <td>${name}</td>
+          <td>${qty}</td>
+          <td>₨${price.toFixed(2)}</td>
+          <td>₨${total.toFixed(2)}</td>
+        </tr>
+      `;
+
+      document.getElementById('bill-body').innerHTML += row;
+      document.getElementById('total').innerText = `Total: ₨${totalAmount.toFixed(2)}`;
+
+      // Clear inputs
+      document.getElementById('item-name').value = '';
+      document.getElementById('item-price').value = '';
+      document.getElementById('item-qty').value = '1';
+    }
+
+    function printAndEmail() {
+      sendEmail();    // Send first
+      window.print(); // Then print
+    }
+
+    function sendEmail() {
+      const billHTML = document.getElementById('bill').innerHTML;
+
+      const params = {
+        bill_html: billHTML
+      };
+
+      emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", params)
+        .then(function(response) {
+          console.log("Email sent!", response.status, response.text);
+        }, function(error) {
+          console.error("Failed to send email:", error);
+        });
+    }
+  </script>
+</body>
+</html>
